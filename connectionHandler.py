@@ -1,14 +1,15 @@
 import socket
 import sys
+import serverCommands
 from thread import *
 
 #This is a dictionary of function pointers that will do the right
 #   thing based on the command we receive from the client.
 def ClientCommandLookup(x):
     return {
-        "attack" : "You attacked your enemy!\n",
-        "spy" : "Your enemy is 10,000 warriors strong!\n",
-        "sabotage" : "You poisoned the enemies water supply, their warriors look weak!\n"
+        "attack" : serverCommands.AttackFunction(),
+        "spy" : serverCommands.SpyFunction(),
+        "sabotage" : serverCommands.SabotageFunction()
     }.get(x, "Command not recognized.\n")
 
 def ClientThread(conn):
