@@ -1,19 +1,10 @@
-import falcon
-import json
+import bottle
+import api_users
+ 
+app = APPLICATION = bottle.default_app()
 
-class UserResource:
-    def on_get(self, req, resp):
-        """Handles Get Requests"""
+print('test test 1234')
 
-        user = {
-            'username': 'dietcokke',
-            'password': 'admin1234',
-            'email': 'yaks98682@yahoo.com'
-        }
-
-        resp.status = falcon.HTTP_200
-        resp.body = json.encoder(user)
-
-api = falcon.API()
-users = UserResource()
-api.add_route('/user', users)
+if __name__ == '__main__':
+    bottle.debug = True
+    bottle.run(server='gunicorn',host='127.0.0.1', port=8000)
