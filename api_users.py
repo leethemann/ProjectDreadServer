@@ -21,32 +21,25 @@ USERS = [
 ]
 
 @post('/users')
-def create_user():
+def creation_handler():
+    #Handles name creation
+
     try:
+        # parse input data
         try:
-            data = request.json()
-            print 'parsed json correctly.'
+            data = request.json
         except:
-            """"request.json parsed bad json, kick it back"""
-            raise ValueError()
+            raise SyntaxError("Bad Json Format")
 
         if data is None:
-            """"Request body was either empty or not json, kick it back"""
-            print 'data was nothing.'
-            raise ValueError()
-
-        print 'data was something.'
-        if 'username' not in data or 'password' not in data:
-            raise ValueError()
+            raise ValueError("Data was nothing")
 
         username = data['username']
 
         for user in USERS:
             if user['username'] == username:
                 print 'duplicate username'
-                raise KeyError('Duplicate Username')
-
-        print('no duplicates found.')
+                raise KeyError()
 
         user = {
             'username': data['username'],
@@ -56,34 +49,33 @@ def create_user():
             'online': False
         }
 
-    except ValueError():
-        response.headers['Content-Type'] = 'application/JSON'
+    except ValueError:
+        # if bad request data, return 400 Bad Request
         response.status = 400
-        response.body = json.dumps({'error': 'Bad Request'})
         return
-
-    except KeyError():
-        response.headers['Content-Type'] = 'application/JSON'
+    
+    except KeyError:
+        # if name already exists, return 409 Conflict
         response.status = 409
-        response.body = json.dumps({'error': 'Duplicate Username'})
         return
 
-    except Exception as e:
-        print e
-        response.headers['Content-Type'] = 'application/JSON'
-        response.status = 500
-        response.body = json.dumps({'error': 'Internal Error. Probably that bad python string I havne\'t fixed yet...'})
+    except SyntaxError:
+        response.status = 999
         return
 
-    if user:
-        USERS.append(user)
+    # add name
+    USERS.append(user)
+    
+    # return 200 Success
+    response.headers['Content-Type'] = 'application/json'
+    return json.dumps({'name': user})
 
-    response.headers['Content-Type'] = 'application/JSON'
-    return json.dumps({'user': user})
 
 @get('/users')
 def get_users():
-    pass
+    response.status = 200
+    response.headers['Content-Type'] = 'appication/JSON'
+    return json.dumps({'users': USERS})
 
 @put('/users/<id>')
 def update_user():
