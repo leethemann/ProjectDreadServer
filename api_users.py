@@ -38,8 +38,7 @@ def creation_handler():
 
         for user in USERS:
             if user['username'] == username:
-                print 'duplicate username'
-                raise KeyError()
+                raise KeyError("Duplicate Username")
 
         user = {
             'username': data['username'],
@@ -49,19 +48,22 @@ def creation_handler():
             'online': False
         }
 
-    except ValueError:
+    except ValueError as ve:
         # if bad request data, return 400 Bad Request
+        response.headers['Content-Type'] = 'application/json'
         response.status = 400
-        return
+        return json.dumps({'error': ve.args[0]})
     
-    except KeyError:
+    except KeyError as ke:
         # if name already exists, return 409 Conflict
+        response.headers['Content-Type'] = 'application/json'
         response.status = 409
-        return
+        return json.dumps({'error': ke.args[0]})
 
-    except SyntaxError:
-        response.status = 999
-        return
+    except SyntaxError as se:
+        response.status = 400
+        response.headers['Content-Type'] = 'application/json'
+        return json.dumps({'error': se.args[0]})
 
     # add name
     USERS.append(user)
@@ -77,10 +79,19 @@ def get_users():
     response.headers['Content-Type'] = 'appication/JSON'
     return json.dumps({'users': USERS})
 
-@put('/users/<id>')
-def update_user():
+@put('/users/<username>')
+def update_user(username):
     pass
 
-@delete('/users/<id>')
-def delete_user():
-    pass
+@delete('/users/<username>')
+def delete_user(username):
+    for user in USERS:
+        if user['username'] == username:
+            USERS.remove(user)
+            response.status = 200
+            response.headers['Content-Type'] = 'appication/JSON'
+            return
+    
+    response.status = 404
+    response.headers['Content-Type'] = 'appication/JSON'
+    return json.dumps({'error': "User not found"})
