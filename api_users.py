@@ -81,7 +81,49 @@ def get_users():
 
 @put('/users/<username>')
 def update_user(username):
-    pass
+    try:
+        userToEdit = None
+        
+        for user in USERS:
+            #this for needs to be replaced with something more performant. An O(n) is a little slow here
+            if user['username'] == username:
+                originalUser = user
+                userToEdit = user
+                break
+
+        if userToEdit is None:
+            raise ValueError("User could not be found.")
+
+        try:
+            data = request.json
+        except:
+            raise SyntaxError("Invalid Json Format / No Json to Parse.")
+
+        if data is None:
+            raise ValueError("No data to use.")
+        
+        if 'username' in data:
+            userToEdit['username'] = data['username']
+
+        if 'password' in data:
+            userToEdit['password'] = data['password']
+
+    except ValueError as ve:
+        response.status = 400
+        response.headers['Content-Type'] = 'application/json'
+        return json.dumps({'error': ve.args[0]})
+
+    except SyntaxError as se:
+        response.status = 400
+        response.headers['Content-Type'] = 'application/json'
+        return json.dumps({'error': se.args[0]})
+
+    USERS.remove(originalUser)
+    USERS.append(userToEdit)
+
+    response.status = 200
+    response.headers['Content-Type'] = 'application/json'
+    return json.dumps({'user': userToEdit})
 
 @delete('/users/<username>')
 def delete_user(username):
