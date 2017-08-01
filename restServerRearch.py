@@ -1,4 +1,5 @@
 import bottle
+import pymongo
 import api_users
  
 app = APPLICATION = bottle.default_app()
